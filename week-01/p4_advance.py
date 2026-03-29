@@ -95,4 +95,4 @@ if __name__ == "__main__":
         ((1, 1), (2, 2)),   # inner 2x2 block
     ]
     for tl, br in queries:
-        print(f"efficient_sum_range(ps, tl, br)}")
+        print(f"  sum {tl} -> {br} = {efficient_sum_range(ps, tl, br)}")
