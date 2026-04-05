@@ -1,6 +1,8 @@
-"""Shared numeric and geometry helpers (pure functions, no I/O)."""
+"""Shared numeric and geometry helpers (pure functions, no I/O) and domain exceptions."""
 
 from __future__ import annotations
+
+import math
 
 # Fixed feature dimensionality for profiles / KD-tree.
 VECTOR_DIM: int = 5
@@ -50,3 +52,32 @@ def weighted_sq_dist_query_to_box(
             t = 0.0
         total += weights[i] * t * t
     return total
+
+
+def hits_equal(
+    a: list[tuple[str, float]],
+    b: list[tuple[str, float]],
+    *,
+    tol: float = 1e-9,
+) -> bool:
+    """Return True if hit lists match (same ids order, distances within ``tol``)."""
+    if len(a) != len(b):
+        return False
+    for (ida, da), (idb, db) in zip(a, b, strict=True):
+        if ida != idb:
+            return False
+        if not math.isclose(da, db, rel_tol=0.0, abs_tol=tol):
+            return False
+    return True
+
+
+class LookalikeSearchError(Exception):
+    """Base class for all recoverable errors in this package."""
+
+    pass
+
+
+class ValidationError(LookalikeSearchError):
+    """Raised when inputs, corpus records, or query payloads are invalid."""
+
+    pass

@@ -2,9 +2,7 @@
 
 import unittest
 
-from services.core.exceptions import ValidationError
-from services.similarity.pipeline import (
-    RawProfile,
+from services.dataset import (
     apply_minmax,
     build_normalized_corpus,
     compute_scaling_stats,
@@ -13,6 +11,8 @@ from services.similarity.pipeline import (
     iter_synthetic_profiles,
     raw_to_prevector,
 )
+from services.dto import RawProfile
+from services.helper import ValidationError
 
 
 class TestPipeline(unittest.TestCase):

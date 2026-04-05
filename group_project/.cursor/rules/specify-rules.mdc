@@ -6,12 +6,12 @@ alwaysApply: true
 
 # group_project Development Guidelines
 
-Auto-generated from feature plans `001-similarity-search-topk`, `002-two-phase-cli`. Last updated: 2026-04-06
+Auto-generated from feature plans `001-similarity-search-topk`, `002-two-phase-cli`, `003-src-module-restructure`. Last updated: 2026-04-06
 
 ## Active Technologies
 
 - Python **3.12+**, **stdlib only** (no PyPI) — see `.specify/memory/constitution.md`
-- Features: top-k similarity search (`specs/001-similarity-search-topk/`); CLI subcommands `generate-corpus` / `search` (`specs/002-two-phase-cli/`)
+- Features: top-k similarity search (`specs/001-similarity-search-topk/`); CLI subcommands `generate-corpus` / `search` (`specs/002-two-phase-cli/`); layout `003-src-module-restructure` (**`services/dto`**, **`services/dataset`** + **`Corpuses`**, **`services/jsonio`**, exceptions in **`services/helper`**, **`BaselineSearcher`** / **`KDTreeSearcher`**)
 - I/O: UTF-8 JSON corpus/query on disk; `generate-corpus` prints file paths; `search` prints JSON results (`.rmit/corpus/` is gitignored)
 
 ## Project Structure
@@ -21,11 +21,11 @@ group_project/
 ├── src/
 │   ├── main.py              # CLI entry
 │   └── services/
-│       ├── helper.py        # Pure utils (min-max, bbox, weighted dist to AABB)
-│       ├── core/            # exceptions
-│       ├── similarity/      # pipeline / profiles
-│       ├── search/          # distance, topk, benchmark, strategies/
-│       └── io/              # jsonio
+│       ├── helper.py        # Numeric/KD utils + LookalikeSearchError, ValidationError
+│       ├── dto/             # RawProfile, NormalizedProfile, ScalingStats
+│       ├── dataset.py       # Catalogs, normalization, iter_synthetic_profiles, Corpuses
+│       ├── jsonio.py        # load_corpus_json, load_query_json, dump_json
+│       └── search/          # distance, topk, benchmark, strategies/
 └── tests/
 ```
 
@@ -53,4 +53,5 @@ python src/main.py search --help
 
 ## Recent Changes
 
-- 002-two-phase-cli: **subcommands** `generate-corpus` (`--N`, `--seed`) and `search` (`--corpus`, `--query`, `--strategy`, `--benchmark`); `get_synthetic_corpus` / `get_synthetic_query` on search path; optional `uv run` examples in docs
+- 003-src-module-restructure: implemented — `services.dto`, `services.dataset` (`Corpuses`), `services.jsonio`; `BaselineSearcher` / `KDTreeSearcher`; `services.core` / `services.io` / `services.similarity` removed
+- 002-two-phase-cli: subcommands `generate-corpus` / `search`; search prep: `services.dataset` (`Corpuses.from_json_path`, `load_query`, or `get_synthetic_corpus` / `get_synthetic_query`); equivalence uses `services.helper.hits_equal`

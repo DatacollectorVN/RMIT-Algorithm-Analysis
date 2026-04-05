@@ -2,27 +2,22 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-
-from services.core.exceptions import ValidationError
+from services.dataset import Corpuses
+from services.helper import ValidationError
 from services.search.distance import weighted_squared_distance
 from services.search.strategies.base import SearchStrategy
 from services.search.topk import finalize_top_k, push_top_k
-from services.similarity.pipeline import NormalizedProfile
 
 
-class BaselineScanner(SearchStrategy):
+class BaselineSearcher(SearchStrategy):
     """Full dataset scan with weighted distance and heap top-k."""
 
     __slots__ = ("_corpus",)
 
-    def __init__(self) -> None:
-        self._corpus: list[NormalizedProfile] = []
-
-    def build(self, corpus: Sequence[NormalizedProfile]) -> None:
-        if not corpus:
-            raise ValidationError("corpus must be non-empty for BaselineScanner")
-        self._corpus = list(corpus)
+    def __init__(self, corpuses: Corpuses) -> None:
+        if not corpuses.normalized:
+            raise ValidationError("corpus must be non-empty for BaselineSearcher")
+        self._corpus = list(corpuses.normalized)
 
     def search(
         self,

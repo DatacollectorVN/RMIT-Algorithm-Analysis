@@ -3,25 +3,21 @@
 import os
 import unittest
 
-from services.search.strategies.baseline import BaselineScanner
-from services.search.strategies.kdtree import KDTreeOptimizer
-from services.similarity.pipeline import build_normalized_corpus, iter_synthetic_profiles
+from services.dataset import Corpuses, iter_synthetic_profiles
+from services.search.strategies.baseline import BaselineSearcher
+from services.search.strategies.kdtree import KDTreeSearcher
 
 
 class TestScaleSmoke(unittest.TestCase):
     def test_ten_thousand_profiles(self) -> None:
         n = 10_000
         raw = list(iter_synthetic_profiles(n, seed=7))
-        norm, stats = build_normalized_corpus(raw)
+        corpuses = Corpuses.from_raw(raw)
         w = (1.0, 1.0, 1.0, 1.0, 1.0)
-        from services.similarity.pipeline import normalize_query_raw
-
-        qv = normalize_query_raw(raw[100], stats)
+        qv = corpuses.normalize_query(raw[100])
         k = 10
-        b = BaselineScanner()
-        t = KDTreeOptimizer()
-        b.build(norm)
-        t.build(norm)
+        b = BaselineSearcher(corpuses)
+        t = KDTreeSearcher(corpuses)
         hb = b.search(qv, w, k)
         hk = t.search(qv, w, k)
         self.assertEqual(hb, hk)
@@ -30,16 +26,12 @@ class TestScaleSmoke(unittest.TestCase):
     def test_hundred_thousand_profiles(self) -> None:
         n = 100_000
         raw = list(iter_synthetic_profiles(n, seed=11))
-        norm, stats = build_normalized_corpus(raw)
+        corpuses = Corpuses.from_raw(raw)
         w = (1.0, 1.0, 1.0, 1.0, 1.0)
-        from services.similarity.pipeline import normalize_query_raw
-
-        qv = normalize_query_raw(raw[5000], stats)
+        qv = corpuses.normalize_query(raw[5000])
         k = 5
-        b = BaselineScanner()
-        t = KDTreeOptimizer()
-        b.build(norm)
-        t.build(norm)
+        b = BaselineSearcher(corpuses)
+        t = KDTreeSearcher(corpuses)
         self.assertEqual(b.search(qv, w, k), t.search(qv, w, k))
 
 

@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from services.core.exceptions import ValidationError
-from services.similarity.pipeline import RawProfile
+from services.dto import RawProfile
+from services.helper import ValidationError
 
 _WEIGHT_KEYS = ("age", "monthly_income", "education", "daily_learning_hours", "domain")
 

@@ -6,7 +6,7 @@ import heapq
 from dataclasses import dataclass
 from typing import Iterable
 
-from services.core.exceptions import ValidationError
+from services.helper import ValidationError
 
 
 @dataclass(frozen=True, slots=True, order=False)

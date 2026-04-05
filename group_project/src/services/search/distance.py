@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import math
 
-from services.core.exceptions import ValidationError
-from services.helper import VECTOR_DIM
+from services.helper import VECTOR_DIM, ValidationError
 
 
 def weighted_squared_distance(

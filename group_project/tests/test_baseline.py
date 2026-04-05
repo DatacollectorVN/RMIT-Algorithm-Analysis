@@ -1,10 +1,11 @@
-"""Tests for BaselineScanner."""
+"""Tests for BaselineSearcher."""
 
 import unittest
 
-from services.core.exceptions import ValidationError
-from services.search.strategies.baseline import BaselineScanner
-from services.similarity.pipeline import NormalizedProfile, RawProfile, build_normalized_corpus
+from services.dataset import Corpuses
+from services.dto import NormalizedProfile, RawProfile
+from services.helper import ValidationError
+from services.search.strategies.baseline import BaselineSearcher
 
 
 class TestBaseline(unittest.TestCase):
@@ -17,15 +18,15 @@ class TestBaseline(unittest.TestCase):
         self.w = (1.0, 1.0, 1.0, 1.0, 1.0)
 
     def test_k_larger_than_n(self) -> None:
-        s = BaselineScanner()
-        s.build(self.corpus)
+        c = Corpuses.from_normalized(self.corpus)
+        s = BaselineSearcher(c)
         q = (0.0, 0.0, 0.0, 0.0, 0.0)
         hits = s.search(q, self.w, k=100)
         self.assertEqual(len(hits), 3)
 
     def test_k_one(self) -> None:
-        s = BaselineScanner()
-        s.build(self.corpus)
+        c = Corpuses.from_normalized(self.corpus)
+        s = BaselineSearcher(c)
         q = (0.0, 0.0, 0.0, 0.0, 0.0)
         hits = s.search(q, self.w, k=1)
         self.assertEqual(hits[0][0], "a")
@@ -36,14 +37,14 @@ class TestBaseline(unittest.TestCase):
             NormalizedProfile("m", (0.0, 0.0, 0.0, 0.0, 0.0)),
             NormalizedProfile("n", (0.0, 0.0, 0.0, 0.0, 0.0)),
         ]
-        s = BaselineScanner()
-        s.build(pts)
+        c = Corpuses.from_normalized(pts)
+        s = BaselineSearcher(c)
         hits = s.search((0.0, 0.0, 0.0, 0.0, 0.0), self.w, k=1)
         self.assertEqual(hits[0][0], "m")
 
     def test_invalid_k(self) -> None:
-        s = BaselineScanner()
-        s.build(self.corpus)
+        c = Corpuses.from_normalized(self.corpus)
+        s = BaselineSearcher(c)
         with self.assertRaises(ValidationError):
             s.search((0.0, 0.0, 0.0, 0.0, 0.0), self.w, k=0)
 
@@ -52,9 +53,8 @@ class TestBaseline(unittest.TestCase):
             RawProfile("p1", 20.0, 10.0, 1.0, "bachelor", "software"),
             RawProfile("p2", 40.0, 20.0, 2.0, "master", "finance"),
         ]
-        norm, stats = build_normalized_corpus(raw)
-        s = BaselineScanner()
-        s.build(norm)
+        corpuses = Corpuses.from_raw(raw)
+        s = BaselineSearcher(corpuses)
         q = (0.5, 0.5, 0.5, 0.5, 0.5)
         hits = s.search(q, (1.0, 1.0, 1.0, 1.0, 1.0), k=2)
         self.assertEqual(len(hits), 2)

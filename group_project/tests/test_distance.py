@@ -2,7 +2,7 @@
 
 import unittest
 
-from services.core.exceptions import ValidationError
+from services.helper import ValidationError
 from services.search.distance import weighted_squared_distance
 
 

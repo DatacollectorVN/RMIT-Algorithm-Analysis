@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from dataclasses import dataclass
 
-from services.core.exceptions import ValidationError
+from services.dataset import Corpuses
+from services.dto import NormalizedProfile
 from services.helper import (
     VECTOR_DIM,
+    ValidationError,
     bbox_of_point,
     union_bbox,
     weighted_sq_dist_query_to_box,
@@ -15,7 +16,6 @@ from services.helper import (
 from services.search.distance import weighted_squared_distance
 from services.search.strategies.base import SearchStrategy
 from services.search.topk import _WorstKey, finalize_top_k, push_top_k
-from services.similarity.pipeline import NormalizedProfile
 
 _EPS = 1e-9
 
@@ -95,18 +95,15 @@ def _search_knn(
                 _search_knn(far, query, weights, k, heap)
 
 
-class KDTreeOptimizer(SearchStrategy):
+class KDTreeSearcher(SearchStrategy):
     """Spatial partitioning index; average-case sublinear pruning vs baseline."""
 
     __slots__ = ("_root",)
 
-    def __init__(self) -> None:
-        self._root: _KDNode | None = None
-
-    def build(self, corpus: Sequence[NormalizedProfile]) -> None:
-        if not corpus:
-            raise ValidationError("corpus must be non-empty for KDTreeOptimizer")
-        self._root = _build_kdtree(list(corpus), 0)
+    def __init__(self, corpuses: Corpuses) -> None:
+        if not corpuses.normalized:
+            raise ValidationError("corpus must be non-empty for KDTreeSearcher")
+        self._root: _KDNode | None = _build_kdtree(list(corpuses.normalized), 0)
 
     def search(
         self,

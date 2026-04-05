@@ -2,7 +2,7 @@
 
 import unittest
 
-from services.core.exceptions import ValidationError
+from services.helper import ValidationError
 from services.search.topk import finalize_top_k, push_top_k, scan_top_k
 
 

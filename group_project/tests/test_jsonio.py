@@ -5,8 +5,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from services.io.jsonio import load_corpus_json, load_query_json
-from services.similarity.pipeline import RawProfile, build_normalized_corpus, normalize_query_raw
+from services.dataset import build_normalized_corpus, normalize_query_raw
+from services.dto import RawProfile
+from services.jsonio import load_corpus_json, load_query_json
 
 
 class TestJsonIO(unittest.TestCase):

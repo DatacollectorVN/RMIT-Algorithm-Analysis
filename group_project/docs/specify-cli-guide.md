@@ -144,7 +144,7 @@ For the exact behavior of this CLI build, prefer **`specify <command> --help`** 
 
 ## 8. Similarity-search app CLI (`group_project`)
 
-The course **top-k similarity** tool lives under `group_project/`. Imports require **`PYTHONPATH`** to include `src` (the entry module does not modify `sys.path`).
+The course **top-k similarity** tool lives under `group_project/`. Imports require **`PYTHONPATH`** to include `src` (the entry module does not modify `sys.path`). Library layout: **`services.dto`** (profile records), **`services.dataset`** (normalization + **`Corpuses`** bundle), **`services.jsonio`** (corpus/query JSON), **`services.helper`** (math helpers + `ValidationError`), **`services.search`** (**`BaselineSearcher`** / **`KDTreeSearcher`**).
 
 **`generate-corpus`** writes **`./.rmit/corpus/YYYYMMDD_HHMMSS/corpus.json`** (+ **`metadata.txt`**) under the **current working directory** and prints absolute paths on stdout (not JSON).
 

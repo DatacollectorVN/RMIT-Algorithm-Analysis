@@ -3,17 +3,20 @@
 from __future__ import annotations
 
 import time
-from collections.abc import Sequence
+from typing import TypeVar
 
+from services.dataset import Corpuses
 from services.search.strategies.base import SearchStrategy
-from services.similarity.pipeline import NormalizedProfile
+
+S = TypeVar("S", bound=SearchStrategy)
 
 
-def timed_build(strategy: SearchStrategy, corpus: Sequence[NormalizedProfile]) -> float:
-    """Call ``strategy.build(corpus)`` and return elapsed seconds."""
+def timed_searcher_construct(searcher_cls: type[S], corpuses: Corpuses) -> tuple[S, float]:
+    """Construct ``searcher_cls(corpuses)`` and return ``(instance, elapsed_seconds)``."""
     t0 = time.perf_counter()
-    strategy.build(corpus)
-    return time.perf_counter() - t0
+    instance = searcher_cls(corpuses)
+    elapsed = time.perf_counter() - t0
+    return instance, elapsed
 
 
 def timed_search(
