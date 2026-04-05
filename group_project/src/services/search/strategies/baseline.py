@@ -15,6 +15,7 @@ class BaselineSearcher(SearchStrategy):
     __slots__ = ("_corpus",)
 
     def __init__(self, corpuses: Corpuses) -> None:
+        super().__init__(corpuses)
         if not corpuses.normalized:
             raise ValidationError("corpus must be non-empty for BaselineSearcher")
         self._corpus = list(corpuses.normalized)

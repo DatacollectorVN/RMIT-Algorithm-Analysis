@@ -3,15 +3,41 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from collections.abc import Iterator
+from contextlib import contextmanager, redirect_stdout
 from io import StringIO
 from pathlib import Path
 
 import main
+
+
+@contextmanager
+def _capture_runner_info_log() -> Iterator[StringIO]:
+    """Capture ``services.runner`` INFO logs (CLI uses logger, not stdout)."""
+    buf = StringIO()
+    handler = logging.StreamHandler(buf)
+    handler.setLevel(logging.INFO)
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    log = logging.getLogger("services.runner")
+    old_handlers = list(log.handlers)
+    old_propagate = log.propagate
+    old_level = log.level
+    log.handlers.clear()
+    log.addHandler(handler)
+    log.setLevel(logging.INFO)
+    log.propagate = False
+    try:
+        yield buf
+    finally:
+        log.removeHandler(handler)
+        log.handlers[:] = old_handlers
+        log.propagate = old_propagate
+        log.setLevel(old_level)
 
 
 _CORPUS_KEYS = frozenset(
@@ -42,8 +68,7 @@ class TestMainGenerateCorpus(unittest.TestCase):
             prev = os.getcwd()
             try:
                 os.chdir(td_path)
-                buf = StringIO()
-                with redirect_stdout(buf):
+                with _capture_runner_info_log() as buf:
                     rc = main.run(["generate-corpus", "--N", "7", "--seed", "0"])
                 out = buf.getvalue()
                 self.assertIn("Corpus:", out)
@@ -150,8 +175,7 @@ class TestMainSearch(unittest.TestCase):
             qpath = Path(td) / "q.json"
             cpath.write_text(json.dumps(corpus), encoding="utf-8")
             qpath.write_text(json.dumps(query), encoding="utf-8")
-            buf = StringIO()
-            with redirect_stdout(buf):
+            with _capture_runner_info_log() as buf:
                 rc = main.run(
                     [
                         "search",
@@ -164,7 +188,7 @@ class TestMainSearch(unittest.TestCase):
                     ]
                 )
             self.assertEqual(rc, 0)
-            out = json.loads(buf.getvalue())
+            out = json.loads(buf.getvalue().strip())
             self.assertEqual(out["strategy"], "baseline")
             self.assertIn("hits", out)
             self.assertEqual(len(out["hits"]), 2)
@@ -176,8 +200,7 @@ class TestMainSearch(unittest.TestCase):
             qpath = Path(td) / "q.json"
             cpath.write_text(json.dumps(corpus), encoding="utf-8")
             qpath.write_text(json.dumps(query), encoding="utf-8")
-            buf = StringIO()
-            with redirect_stdout(buf):
+            with _capture_runner_info_log() as buf:
                 rc = main.run(
                     [
                         "search",
@@ -191,7 +214,7 @@ class TestMainSearch(unittest.TestCase):
                     ]
                 )
             self.assertEqual(rc, 0)
-            out = json.loads(buf.getvalue())
+            out = json.loads(buf.getvalue().strip())
             self.assertIn("timing", out)
             self.assertIn("search_seconds", out["timing"])
             self.assertIn("build_seconds", out["timing"])
@@ -203,8 +226,7 @@ class TestMainSearch(unittest.TestCase):
             qpath = Path(td) / "q.json"
             cpath.write_text(json.dumps(corpus), encoding="utf-8")
             qpath.write_text(json.dumps(query), encoding="utf-8")
-            buf = StringIO()
-            with redirect_stdout(buf):
+            with _capture_runner_info_log() as buf:
                 rc = main.run(
                     [
                         "search",
@@ -217,7 +239,7 @@ class TestMainSearch(unittest.TestCase):
                     ]
                 )
             self.assertEqual(rc, 0)
-            out = json.loads(buf.getvalue())
+            out = json.loads(buf.getvalue().strip())
             self.assertEqual(out["strategy"], "kdtree")
             self.assertEqual(len(out["hits"]), 2)
 
@@ -240,8 +262,7 @@ class TestMainEndToEnd(unittest.TestCase):
                 corpus_path = stamp_dirs[-1] / "corpus.json"
                 qpath = td_path / "q.json"
                 qpath.write_text(json.dumps(query), encoding="utf-8")
-                buf = StringIO()
-                with redirect_stdout(buf):
+                with _capture_runner_info_log() as buf:
                     rc_search = main.run(
                         [
                             "search",
@@ -256,7 +277,7 @@ class TestMainEndToEnd(unittest.TestCase):
             finally:
                 os.chdir(prev)
             self.assertEqual(rc_search, 0)
-            out = json.loads(buf.getvalue())
+            out = json.loads(buf.getvalue().strip())
             self.assertEqual(len(out["hits"]), 2)
 
 

@@ -8,8 +8,10 @@ from typing import TypeVar
 from services.dataset import Corpuses
 from services.search.strategies.base import SearchStrategy
 
+S = TypeVar("S", bound=SearchStrategy)
 
-def timed_searcher_construct(searcher_cls: type[S], corpuses: Corpuses) -> tuple[SearchStrategy, float]:
+
+def timed_searcher_construct(searcher_cls: type[S], corpuses: Corpuses) -> tuple[S, float]:
     """Construct ``searcher_cls(corpuses)`` and return ``(instance, elapsed_seconds)``."""
     t0 = time.perf_counter()
     instance = searcher_cls(corpuses)

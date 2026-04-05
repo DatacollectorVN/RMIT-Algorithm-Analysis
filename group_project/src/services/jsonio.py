@@ -6,10 +6,9 @@ import json
 from pathlib import Path
 from typing import Any
 
+from services.constants import QUERY_WEIGHT_KEYS
 from services.dto import RawProfile
 from services.helper import ValidationError
-
-_WEIGHT_KEYS = ("age", "monthly_income", "education", "daily_learning_hours", "domain")
 
 
 def load_corpus_json(path: str | Path) -> list[RawProfile]:
@@ -55,7 +54,9 @@ def _parse_corpus_record(item: Any, index: int) -> RawProfile:
     )
 
 
-def load_query_json(path: str | Path) -> tuple[RawProfile, tuple[float, float, float, float, float], int]:
+def load_query_json(
+    path: str | Path,
+) -> tuple[RawProfile, tuple[float, float, float, float, float], int]:
     """Load query file: reference profile, weights, and k.
 
     Args:
@@ -79,7 +80,7 @@ def load_query_json(path: str | Path) -> tuple[RawProfile, tuple[float, float, f
     if not isinstance(wobj, dict):
         raise ValidationError("weights must be an object")
     weights_list: list[float] = []
-    for key in _WEIGHT_KEYS:
+    for key in QUERY_WEIGHT_KEYS:
         if key not in wobj:
             raise ValidationError(f"weights missing key {key!r}")
         weights_list.append(float(wobj[key]))

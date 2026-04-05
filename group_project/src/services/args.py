@@ -1,5 +1,6 @@
 import argparse
 
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="main.py",
@@ -19,7 +20,9 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         help="Number of synthetic profiles (integer ≥ 1).",
     )
-    gen.add_argument("--seed", type=int, default=None, help="Optional RNG seed for reproducibility.")
+    gen.add_argument(
+        "--seed", type=int, default=None, help="Optional RNG seed for reproducibility."
+    )
 
     sea = subs.add_parser("search", help="Run weighted top-k similarity search.")
     sea.add_argument("--corpus", required=True, help="Path to JSON corpus array.")

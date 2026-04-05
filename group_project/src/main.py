@@ -10,9 +10,12 @@ Imports assume ``PYTHONPATH`` includes the ``src`` directory (no runtime ``sys.p
 """
 
 from __future__ import annotations
+
+import logging
+
 from services.args import build_parser
 from services.runner import run_generate_corpus, run_search
-import logging
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 

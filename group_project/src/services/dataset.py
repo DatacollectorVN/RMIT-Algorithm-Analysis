@@ -5,33 +5,11 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass
 from pathlib import Path
-from typing import ClassVar, Final, Iterator, Sequence
+from typing import ClassVar, Iterator, Sequence
 
+from services.constants import DEGREE_CATALOG, DOMAIN_CATALOG, VECTOR_DIM
 from services.dto import NormalizedProfile, RawProfile, ScalingStats
-from services.helper import VECTOR_DIM, ValidationError, minmax_scalar
-
-# Backward-compatible module aliases for catalogs (same as Corpuses class attributes).
-DEGREE_CATALOG: Final[tuple[str, ...]] = (
-    "none",
-    "certificate",
-    "associate",
-    "bachelor",
-    "master",
-    "doctorate",
-    "postdoc",
-)
-DOMAIN_CATALOG: Final[tuple[str, ...]] = (
-    "software",
-    "data_science",
-    "finance",
-    "healthcare",
-    "education",
-    "manufacturing",
-    "retail",
-    "research",
-    "design",
-    "operations",
-)
+from services.helper import ValidationError, minmax_scalar
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,7 +61,13 @@ class Corpuses:
         stats: ScalingStats,
     ) -> tuple[float, float, float, float, float]:
         """Scale one pre-vector using corpus Min–Max stats."""
-        return tuple(minmax_scalar(pre[i], stats.mins[i], stats.maxs[i]) for i in range(VECTOR_DIM))
+        return (
+            minmax_scalar(pre[0], stats.mins[0], stats.maxs[0]),
+            minmax_scalar(pre[1], stats.mins[1], stats.maxs[1]),
+            minmax_scalar(pre[2], stats.mins[2], stats.maxs[2]),
+            minmax_scalar(pre[3], stats.mins[3], stats.maxs[3]),
+            minmax_scalar(pre[4], stats.mins[4], stats.maxs[4]),
+        )
 
     @staticmethod
     def _compute_scaling_stats(
@@ -104,7 +88,9 @@ class Corpuses:
         )
 
     @classmethod
-    def iter_synthetic_profiles(cls, count: int, *, seed: int | None = None) -> Iterator[RawProfile]:
+    def iter_synthetic_profiles(
+        cls, count: int, *, seed: int | None = None
+    ) -> Iterator[RawProfile]:
         """Yield ``count`` synthetic profiles (stdlib ``random`` only)."""
         if count < 0:
             raise ValidationError("count must be non-negative")
@@ -189,7 +175,9 @@ class Corpuses:
 
     def load_query(
         self, query_path: str | Path
-    ) -> tuple[tuple[float, float, float, float, float], tuple[float, float, float, float, float], int]:
+    ) -> tuple[
+        tuple[float, float, float, float, float], tuple[float, float, float, float, float], int
+    ]:
         """Load query JSON and normalize the reference using this corpus's stats.
 
         Args:
@@ -237,11 +225,15 @@ def iter_synthetic_profiles(count: int, *, seed: int | None = None) -> Iterator[
     yield from Corpuses.iter_synthetic_profiles(count, seed=seed)
 
 
-def build_normalized_corpus(raw_profiles: Sequence[RawProfile]) -> tuple[list[NormalizedProfile], ScalingStats]:
+def build_normalized_corpus(
+    raw_profiles: Sequence[RawProfile],
+) -> tuple[list[NormalizedProfile], ScalingStats]:
     return Corpuses._build_normalized_pair(raw_profiles)
 
 
-def normalize_query_raw(raw: RawProfile, stats: ScalingStats) -> tuple[float, float, float, float, float]:
+def normalize_query_raw(
+    raw: RawProfile, stats: ScalingStats
+) -> tuple[float, float, float, float, float]:
     return Corpuses._normalize_query_raw(raw, stats)
 
 

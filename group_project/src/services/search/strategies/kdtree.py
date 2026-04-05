@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from services.constants import KD_TREE_LB_EPS, VECTOR_DIM
 from services.dataset import Corpuses
 from services.dto import NormalizedProfile
 from services.helper import (
-    VECTOR_DIM,
     ValidationError,
     bbox_of_point,
     union_bbox,
@@ -16,8 +16,6 @@ from services.helper import (
 from services.search.distance import weighted_squared_distance
 from services.search.strategies.base import SearchStrategy
 from services.search.topk import _WorstKey, finalize_top_k, push_top_k
-
-_EPS = 1e-9
 
 
 @dataclass(slots=True)
@@ -91,7 +89,7 @@ def _search_knn(
             _search_knn(far, query, weights, k, heap)
         else:
             lb = weighted_sq_dist_query_to_box(query, weights, far.bbox_lo, far.bbox_hi)
-            if lb <= _worst_distance(heap) + _EPS:
+            if lb <= _worst_distance(heap) + KD_TREE_LB_EPS:
                 _search_knn(far, query, weights, k, heap)
 
 
@@ -101,6 +99,7 @@ class KDTreeSearcher(SearchStrategy):
     __slots__ = ("_root",)
 
     def __init__(self, corpuses: Corpuses) -> None:
+        super().__init__(corpuses)
         if not corpuses.normalized:
             raise ValidationError("corpus must be non-empty for KDTreeSearcher")
         self._root: _KDNode | None = _build_kdtree(list(corpuses.normalized), 0)

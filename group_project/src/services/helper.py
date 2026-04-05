@@ -4,10 +4,8 @@ from __future__ import annotations
 
 import math
 
-# Fixed feature dimensionality for profiles / KD-tree.
-VECTOR_DIM: int = 5
-
-Vec5 = tuple[float, float, float, float, float]
+from services.constants import HITS_EQUAL_ABS_TOL, VECTOR_DIM
+from services.dto import ProfileVector
 
 
 def minmax_scalar(x: float, lo: float, hi: float) -> float:
@@ -17,28 +15,40 @@ def minmax_scalar(x: float, lo: float, hi: float) -> float:
     return (x - lo) / (hi - lo)
 
 
-def bbox_of_point(v: Vec5) -> tuple[Vec5, Vec5]:
+def bbox_of_point(v: ProfileVector) -> tuple[ProfileVector, ProfileVector]:
     """Degenerate axis-aligned box for a single point."""
     return v, v
 
 
 def union_bbox(
-    lo1: tuple[float, ...],
-    hi1: tuple[float, ...],
-    lo2: tuple[float, ...],
-    hi2: tuple[float, ...],
-) -> tuple[tuple[float, ...], tuple[float, ...]]:
+    lo1: ProfileVector,
+    hi1: ProfileVector,
+    lo2: ProfileVector,
+    hi2: ProfileVector,
+) -> tuple[ProfileVector, ProfileVector]:
     """Merge two axis-aligned boxes (component-wise min/max)."""
-    lo = tuple(min(lo1[i], lo2[i]) for i in range(VECTOR_DIM))
-    hi = tuple(max(hi1[i], hi2[i]) for i in range(VECTOR_DIM))
+    lo: ProfileVector = (
+        min(lo1[0], lo2[0]),
+        min(lo1[1], lo2[1]),
+        min(lo1[2], lo2[2]),
+        min(lo1[3], lo2[3]),
+        min(lo1[4], lo2[4]),
+    )
+    hi: ProfileVector = (
+        max(hi1[0], hi2[0]),
+        max(hi1[1], hi2[1]),
+        max(hi1[2], hi2[2]),
+        max(hi1[3], hi2[3]),
+        max(hi1[4], hi2[4]),
+    )
     return lo, hi
 
 
 def weighted_sq_dist_query_to_box(
-    query: Vec5,
-    weights: Vec5,
-    lo: Vec5,
-    hi: Vec5,
+    query: ProfileVector,
+    weights: ProfileVector,
+    lo: ProfileVector,
+    hi: ProfileVector,
 ) -> float:
     """Lower bound on Σ w_i (q_i - p_i)² for any ``p`` inside ``[lo, hi]``."""
     total = 0.0
@@ -58,7 +68,7 @@ def hits_equal(
     a: list[tuple[str, float]],
     b: list[tuple[str, float]],
     *,
-    tol: float = 1e-9,
+    tol: float = HITS_EQUAL_ABS_TOL,
 ) -> bool:
     """Return True if hit lists match (same ids order, distances within ``tol``)."""
     if len(a) != len(b):

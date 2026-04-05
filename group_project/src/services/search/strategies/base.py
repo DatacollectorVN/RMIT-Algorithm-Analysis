@@ -4,9 +4,15 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
+from services.dataset import Corpuses
+
 
 class SearchStrategy(ABC):
     """Weighted top-k query over a corpus fixed at construction time."""
+
+    def __init__(self, corpuses: Corpuses) -> None:
+        """Subclasses call ``super().__init__(corpuses)`` and build index state."""
+        _ = corpuses
 
     @abstractmethod
     def search(
