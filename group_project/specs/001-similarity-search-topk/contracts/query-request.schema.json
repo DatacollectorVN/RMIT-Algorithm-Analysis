@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/query-request.json",
+  "title": "QueryRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["reference", "weights", "k"],
+  "properties": {
+    "reference": { "$ref": "#/$defs/rawProfile" },
+    "weights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "age",
+        "monthly_income",
+        "education",
+        "daily_learning_hours",
+        "domain"
+      ],
+      "properties": {
+        "age": { "type": "number", "minimum": 0 },
+        "monthly_income": { "type": "number", "minimum": 0 },
+        "education": { "type": "number", "minimum": 0 },
+        "daily_learning_hours": { "type": "number", "minimum": 0 },
+        "domain": { "type": "number", "minimum": 0 }
+      }
+    },
+    "k": { "type": "integer", "minimum": 1 }
+  },
+  "$defs": {
+    "rawProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_id",
+        "age",
+        "monthly_income",
+        "daily_learning_hours",
+        "highest_degree",
+        "favourite_domain"
+      ],
+      "properties": {
+        "profile_id": { "type": "string", "minLength": 1 },
+        "age": { "type": "number" },
+        "monthly_income": { "type": "number", "minimum": 0 },
+        "daily_learning_hours": { "type": "number", "minimum": 0 },
+        "highest_degree": { "type": "string", "minLength": 1 },
+        "favourite_domain": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

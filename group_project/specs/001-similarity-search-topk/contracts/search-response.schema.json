@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/search-response.json",
+  "title": "SearchResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["strategy", "hits"],
+  "properties": {
+    "strategy": { "type": "string", "enum": ["baseline", "kdtree"] },
+    "hits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["profile_id", "distance"],
+        "properties": {
+          "profile_id": { "type": "string" },
+          "distance": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "search_seconds": { "type": "number", "minimum": 0 },
+        "build_seconds": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+---
+description: Project Development Guidelines
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# group_project Development Guidelines
+
+Auto-generated from feature plan `001-similarity-search-topk`. Last updated: 2026-04-04
+
+## Active Technologies
+
+- Python **3.12+**, **stdlib only** (no PyPI) — see `.specify/memory/constitution.md`
+- Feature: top-k profile similarity search (`specs/001-similarity-search-topk/`)
+
+## Project Structure
+
+```text
+group_project/
+├── src/
+│   ├── main.py              # CLI entry
+│   └── services/
+│       ├── helper.py        # Pure utils (min-max, bbox, weighted dist to AABB)
+│       ├── core/            # exceptions
+│       ├── similarity/      # pipeline / profiles
+│       ├── search/          # distance, topk, benchmark, strategies/
+│       └── io/              # jsonio
+└── tests/
+```
+
+## Commands
+
+```bash
+cd group_project
+export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
+python -m unittest discover -s tests -p 'test_*.py'
+python src/main.py --help
+```
+
+## Code Style
+
+- PEP 8, strict type hints, Google-style docstrings, custom exception hierarchy
+- Tests: `unittest` only (no pytest)
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->

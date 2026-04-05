@@ -1,0 +1,123 @@
+"""Five-dimensional KD-tree with weighted squared-distance k-NN search."""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+from dataclasses import dataclass
+
+from services.core.exceptions import ValidationError
+from services.helper import (
+    VECTOR_DIM,
+    bbox_of_point,
+    union_bbox,
+    weighted_sq_dist_query_to_box,
+)
+from services.search.distance import weighted_squared_distance
+from services.search.strategies.base import SearchStrategy
+from services.search.topk import _WorstKey, finalize_top_k, push_top_k
+from services.similarity.pipeline import NormalizedProfile
+
+_EPS = 1e-9
+
+
+@dataclass(slots=True)
+class _KDNode:
+    """KD-tree node with axis-aligned bounding box of its subtree."""
+
+    point: NormalizedProfile
+    axis: int
+    left: _KDNode | None
+    right: _KDNode | None
+    bbox_lo: tuple[float, float, float, float, float]
+    bbox_hi: tuple[float, float, float, float, float]
+
+
+def _merge_node_bbox(
+    point_vec: tuple[float, float, float, float, float],
+    left: _KDNode | None,
+    right: _KDNode | None,
+) -> tuple[tuple[float, float, float, float, float], tuple[float, float, float, float, float]]:
+    lo, hi = bbox_of_point(point_vec)
+    if left is not None:
+        lo, hi = union_bbox(lo, hi, left.bbox_lo, left.bbox_hi)
+    if right is not None:
+        lo, hi = union_bbox(lo, hi, right.bbox_lo, right.bbox_hi)
+    return lo, hi
+
+
+def _build_kdtree(points: list[NormalizedProfile], depth: int) -> _KDNode | None:
+    if not points:
+        return None
+    if len(points) == 1:
+        p = points[0]
+        lo, hi = bbox_of_point(p.vector)
+        return _KDNode(p, depth % VECTOR_DIM, None, None, lo, hi)
+    axis = depth % VECTOR_DIM
+    sp = sorted(points, key=lambda x: x.vector[axis])
+    mid = len(sp) // 2
+    node_point = sp[mid]
+    left_pts = sp[:mid]
+    right_pts = sp[mid + 1 :]
+    left = _build_kdtree(left_pts, depth + 1)
+    right = _build_kdtree(right_pts, depth + 1)
+    lo, hi = _merge_node_bbox(node_point.vector, left, right)
+    return _KDNode(node_point, axis, left, right, lo, hi)
+
+
+def _worst_distance(heap: list[_WorstKey]) -> float:
+    return heap[0].distance
+
+
+def _search_knn(
+    node: _KDNode | None,
+    query: tuple[float, float, float, float, float],
+    weights: tuple[float, float, float, float, float],
+    k: int,
+    heap: list[_WorstKey],
+) -> None:
+    if node is None:
+        return
+    d = weighted_squared_distance(query, node.point.vector, weights)
+    push_top_k(heap, d, node.point.profile_id, k)
+
+    axis = node.axis
+    delta = query[axis] - node.point.vector[axis]
+    near, far = (node.left, node.right) if delta < 0 else (node.right, node.left)
+
+    _search_knn(near, query, weights, k, heap)
+
+    if far is not None:
+        if len(heap) < k:
+            _search_knn(far, query, weights, k, heap)
+        else:
+            lb = weighted_sq_dist_query_to_box(query, weights, far.bbox_lo, far.bbox_hi)
+            if lb <= _worst_distance(heap) + _EPS:
+                _search_knn(far, query, weights, k, heap)
+
+
+class KDTreeOptimizer(SearchStrategy):
+    """Spatial partitioning index; average-case sublinear pruning vs baseline."""
+
+    __slots__ = ("_root",)
+
+    def __init__(self) -> None:
+        self._root: _KDNode | None = None
+
+    def build(self, corpus: Sequence[NormalizedProfile]) -> None:
+        if not corpus:
+            raise ValidationError("corpus must be non-empty for KDTreeOptimizer")
+        self._root = _build_kdtree(list(corpus), 0)
+
+    def search(
+        self,
+        query_vector: tuple[float, float, float, float, float],
+        weights: tuple[float, float, float, float, float],
+        k: int,
+    ) -> list[tuple[str, float]]:
+        if k < 1:
+            raise ValidationError("k must be at least 1")
+        if self._root is None:
+            raise ValidationError("KD-tree not built")
+        heap: list[_WorstKey] = []
+        _search_knn(self._root, query_vector, weights, k, heap)
+        return finalize_top_k(heap)

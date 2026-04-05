@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/corpus-record.json",
+  "title": "CorpusRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile_id",
+    "age",
+    "monthly_income",
+    "daily_learning_hours",
+    "highest_degree",
+    "favourite_domain"
+  ],
+  "properties": {
+    "profile_id": { "type": "string", "minLength": 1 },
+    "age": { "type": "number" },
+    "monthly_income": { "type": "number", "minimum": 0 },
+    "daily_learning_hours": { "type": "number", "minimum": 0 },
+    "highest_degree": { "type": "string", "minLength": 1 },
+    "favourite_domain": { "type": "string", "minLength": 1 }
+  }
+}
