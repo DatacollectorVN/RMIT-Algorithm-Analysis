@@ -5,6 +5,7 @@ from services.dto import NormalizedProfile, RawProfile, ScalingStats
 from services.helper import LookalikeSearchError, ValidationError
 from services.jsonio import dump_json, load_corpus_json, load_query_json
 from services.args import build_parser
+from services.runner import run_generate_corpus, run_search
 
 __all__ = [
     "LookalikeSearchError",
@@ -18,4 +19,6 @@ __all__ = [
     "load_corpus_json",
     "load_query_json",
     "build_parser",
+    "run_generate_corpus",
+    "run_search",
 ]
