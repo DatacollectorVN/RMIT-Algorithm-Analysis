@@ -12,3 +12,7 @@ build/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# CLI generate-corpus output (timestamped runs)
+.rmit/corpus/
+

@@ -1,0 +1,18 @@
+{
+    "reference": {
+      "profile_id": "q1",
+      "age": 30,
+      "monthly_income": 55.0,
+      "daily_learning_hours": 3.0,
+      "highest_degree": "master",
+      "favourite_domain": "finance"
+    },
+    "weights": {
+      "age": 1.0,
+      "monthly_income": 1.0,
+      "education": 0.5,
+      "daily_learning_hours": 1.0,
+      "domain": 1.0
+    },
+    "k": 5
+  }

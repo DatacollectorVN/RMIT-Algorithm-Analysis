@@ -96,7 +96,8 @@ In Chat or Agent, use the **Spec Kit** slash commands (files in `.cursor/command
 2. **`/speckit.plan`** — Technical plan from the spec.
 3. **`/speckit.tasks`** — Task breakdown.
 4. **`/speckit.implement`** — Implementation pass against tasks.
-5. **`/speckit.analyze`**, **`/speckit.clarify`**, **`/speckit.checklist`**, **`/speckit.constitution`** — As needed for quality and governance.
+5. **`/speckit.refine`** — After you change code or tasks by hand, sync **`spec.md`**, **`plan.md`**, **`tasks.md`**, **`contracts/`**, **`quickstart.md`** so artifacts match reality (this command **edits** files; **`/speckit.analyze`** is read-only).
+6. **`/speckit.analyze`**, **`/speckit.clarify`**, **`/speckit.checklist`**, **`/speckit.constitution`** — As needed for quality and governance.
 
 Each command file describes what the agent must do (prerequisites, scripts to run, handoffs). Prefer following that order unless your instructor says otherwise.
 
@@ -138,3 +139,20 @@ These are optional for coursework unless the brief requires them.
 - [Spec Kit documentation](https://github.github.com/spec-kit/) — Install, upgrade, concepts.
 
 For the exact behavior of this CLI build, prefer **`specify <command> --help`** on your machine.
+
+---
+
+## 8. Similarity-search app CLI (`group_project`)
+
+The course **top-k similarity** tool lives under `group_project/`. Imports require **`PYTHONPATH`** to include `src` (the entry module does not modify `sys.path`).
+
+**`generate-corpus`** writes **`./.rmit/corpus/YYYYMMDD_HHMMSS/corpus.json`** (+ **`metadata.txt`**) under the **current working directory** and prints absolute paths on stdout (not JSON).
+
+```bash
+cd group_project
+export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
+python src/main.py generate-corpus --N 100 --seed 42
+python src/main.py search --corpus ./.rmit/corpus/<timestamp>/corpus.json --query .rmit/query/test.json --strategy baseline
+```
+
+Optional: **`uv run python src/main.py …`**. Full examples: `specs/002-two-phase-cli/quickstart.md`.

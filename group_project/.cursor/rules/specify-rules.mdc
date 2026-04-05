@@ -6,12 +6,13 @@ alwaysApply: true
 
 # group_project Development Guidelines
 
-Auto-generated from feature plan `001-similarity-search-topk`. Last updated: 2026-04-04
+Auto-generated from feature plans `001-similarity-search-topk`, `002-two-phase-cli`. Last updated: 2026-04-06
 
 ## Active Technologies
 
 - Python **3.12+**, **stdlib only** (no PyPI) — see `.specify/memory/constitution.md`
-- Feature: top-k profile similarity search (`specs/001-similarity-search-topk/`)
+- Features: top-k similarity search (`specs/001-similarity-search-topk/`); CLI subcommands `generate-corpus` / `search` (`specs/002-two-phase-cli/`)
+- I/O: UTF-8 JSON corpus/query on disk; `generate-corpus` prints file paths; `search` prints JSON results (`.rmit/corpus/` is gitignored)
 
 ## Project Structure
 
@@ -35,6 +36,11 @@ cd group_project
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
 python -m unittest discover -s tests -p 'test_*.py'
 python src/main.py --help
+python src/main.py generate-corpus --help
+python src/main.py search --help
+# generate-corpus writes .rmit/corpus/<timestamp>/corpus.json (+ metadata); prints paths
+# Optional: uv run python src/main.py generate-corpus --N 100 --seed 1
+# Optional: uv run python src/main.py search --corpus .rmit/corpus/.../corpus.json --query query.json --strategy baseline
 ```
 
 ## Code Style
@@ -44,3 +50,7 @@ python src/main.py --help
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
+
+## Recent Changes
+
+- 002-two-phase-cli: **subcommands** `generate-corpus` (`--N`, `--seed`) and `search` (`--corpus`, `--query`, `--strategy`, `--benchmark`); `get_synthetic_corpus` / `get_synthetic_query` on search path; optional `uv run` examples in docs
